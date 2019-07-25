@@ -3,11 +3,13 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-07-25 09:35:05
+ * @LastEditTime: 2019-07-25 10:03:00
  * @Description: 
  */
 #include <gtest/gtest.h>
+#include <message/InternetMessage.hpp>
 
 TEST(InternetMessageTests, Placeholder) {
-    ASSERT_EQ(42, 6 * 7);
+    msg::InternetMessage internetMessage;
+    ASSERT_EQ(42, internetMessage.foo());
 }
