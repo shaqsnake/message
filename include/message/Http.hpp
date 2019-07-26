@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:27:32
- * @LastEditTime: 2019-07-26 15:40:10
+ * @LastEditTime: 2019-07-26 15:46:48
  * @Description: A declaration of class msg::Http.
  */
 #ifndef MESSAGE_HTTP_HPP
@@ -14,6 +14,7 @@
 #include <unordered_map>
 
 namespace msg {
+
 class Http {
 public:
     Http();
