@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
 
-set(This InternetMessageTests)
+set(This HttpTests)
 
 set (Sources
-    src/InternetMessageTests.cpp
+    src/HttpTests.cpp
 )
 
 add_executable(${This} ${Sources})
