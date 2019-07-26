@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-07-26 15:39:59
+ * @LastEditTime: 2019-07-26 16:03:46
  * @Description: An implementation of class msg::Http.
  */
 #include <algorithm>
@@ -88,12 +88,10 @@ bool Http::parseFromMessage(const std::string &rawMessage) {
     std::vector<std::string> lines; // Store the splited parts of message.
     std::string::size_type start = 0;
     std::string::size_type offset = rawMessage.find(lineTerminator);
-    while (offset != std::string::npos) { // Splite message.
+    while (start != offset) { // Splite message.
         lines.push_back(rawMessage.substr(start, offset - start));
         start = offset + lineTerminator.size();
         offset = rawMessage.find(lineTerminator, start);
-        if (start == offset)
-            break; // Reached the end of message header.
     }
     if (start != rawMessage.length()) // Set body if exists.
         impl_->body = trim(rawMessage.substr(start));
