@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-07-26 15:51:19
+ * @LastEditTime: 2019-07-27 17:04:35
  * @Description: Unittests of class msg::Http.
  */
 #include <gtest/gtest.h>
@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
-TEST(HttpTests, ParseFromHttpRequestString) {
+TEST(HttpTests, ParseAndProduceHttpRequestString) {
     std::string rawMessage =
         "User-Agent: curl/7.16.3 libcurl/7.16.3 OpenSSL/0.9.7l zlib/1.2.3\r\n"
         "Host: www.example.com\r\n"
@@ -47,9 +47,10 @@ TEST(HttpTests, ParseFromHttpRequestString) {
 
     ASSERT_EQ("", http.getBody());
     ASSERT_FALSE(http.hasHeader("spma"));
+    ASSERT_EQ(rawMessage, http.produceToMessage());
 }
 
-TEST(HttpTests, ParseFromHttpResponseString) {
+TEST(HttpTests, ParseAndProduceHttpResponseString) {
     std::string rawMessage =
         "Date: Mon, 27 Jul 2009 12:28:53 GMT\r\n"
         "Server: Apache\r\n"
@@ -95,4 +96,5 @@ TEST(HttpTests, ParseFromHttpResponseString) {
 
     ASSERT_EQ("Hello World! My payload includes a trailing CRLF.", http.getBody());
     ASSERT_FALSE(http.hasHeader("spma"));
+    ASSERT_EQ(rawMessage, http.produceToMessage());
 }

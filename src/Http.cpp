@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-07-26 16:03:46
+ * @LastEditTime: 2019-07-27 17:03:54
  * @Description: An implementation of class msg::Http.
  */
 #include <algorithm>
@@ -106,11 +106,30 @@ bool Http::parseFromMessage(const std::string &rawMessage) {
         else { // Set headers.
             auto headerName = trim(line.substr(0, pos));
             auto headerValue = trim(line.substr(pos + 1));
-            impl_->headers[headerName] = headerValue;
+            impl_->headers.emplace_back(headerName, headerValue);
         }
     }
 
     return true;
+}
+
+/**
+ * @description:
+ *     Produce http components to a complete http message.
+ * @return:
+ *     A http message including headers and body.
+ */
+std::string Http::produceToMessage() const {
+    std::string targetMessage;
+    for (const auto &header : impl_->headers) {
+        targetMessage += header.first + ": " + header.second + "\r\n";
+    }
+
+    targetMessage += "\r\n";
+    if (!impl_->body.empty())
+        targetMessage += impl_->body + "\r\n";
+
+    return targetMessage;
 }
 
 /**
@@ -131,7 +150,11 @@ Http::Headers Http::getHeaders() const { return impl_->headers; }
  *     is returned.
  */
 bool Http::hasHeader(const std::string &headerName) const {
-    return impl_->headers.count(headerName);
+    for (const auto &header : impl_->headers) {
+        if (header.first == headerName)
+            return true;
+    }
+    return false;
 }
 
 /**
@@ -143,7 +166,11 @@ bool Http::hasHeader(const std::string &headerName) const {
  *     The header's value which indexed by its name.
  */
 std::string Http::getHeaderValue(const std::string &headerName) const {
-    return impl_->headers[headerName];
+    for (const auto &header : impl_->headers) {
+        if (header.first == headerName)
+            return header.second;
+    }
+    return "";
 }
 
 std::string Http::getBody() const { return impl_->body; }
