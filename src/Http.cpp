@@ -42,13 +42,12 @@ static inline void rtrim(std::string &s) {
  * @description:
  *     Remove the whitspace characters
  *     at the both sides of an input string.
- * @param[in] str
+ * @param[in] s
  *     An input string.
  */
-std::string trim(std::string str) {
-    ltrim(str);
-    rtrim(str);
-    return str;
+void trim(std::string &s) {
+    ltrim(s);
+    rtrim(s);
 }
 
 } // namespace
@@ -111,6 +110,8 @@ bool Http::parseFromMessage(const std::string &rawMessage) {
 
             auto pos = line.find(headerFieldDelimeter);
 
+                auto headerName = line.substr(0, pos);
+                auto headerValue = line.substr(pos + 1);
             if (pos == 0) // Failed if header's name is blank.
                 return false;
             else { // Set headers.
@@ -119,9 +120,17 @@ bool Http::parseFromMessage(const std::string &rawMessage) {
                 impl_->headers.emplace_back(headerName, headerValue);
             }
         } else { // Concat rest message to body.
-            impl_->body += trim(line);
+            impl_->body += line;
         }
     }
+
+    // Trim whitespace characters of all headers and body field.
+    for (auto &header : impl_->headers) {
+        trim(header.first);
+        trim(header.second);
+    }
+    if (impl_->body.length())
+        trim(impl_->body);
 
     return true;
 }
