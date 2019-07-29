@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-07-29 11:19:57
+ * @LastEditTime: 2019-07-29 16:17:40
  * @Description: An implementation of class msg::Http.
  */
 #include <algorithm>
@@ -88,34 +88,38 @@ bool Http::parseFromMessage(const std::string &rawMessage) {
     std::vector<std::string> lines; // Store the splited parts of message.
     std::string::size_type start = 0;
     std::string::size_type offset = rawMessage.find(lineTerminator);
-    while (start != offset) { // Splite message.
+    // Splite message by lines.
+    while (start != rawMessage.length()) {
         lines.push_back(rawMessage.substr(start, offset - start));
         start = offset + lineTerminator.size();
         offset = rawMessage.find(lineTerminator, start);
 
-        if (offset - start > 998)
+        if (offset != std::string::npos && offset - start > 998)
             return false;
     }
-    if (start != rawMessage.length()) { // Set body if exists.
-        std::string bodyMessage = trim(rawMessage.substr(start));
-        if (bodyMessage.length() > 998)
-            return false;
 
-        impl_->body = std::move(bodyMessage);
-        bodyMessage.clear();
-    }
+    // Handle each line and assign it to header or body.
+    bool doneWithHeaders = false;
+    for (const auto &line : lines) {
+        if (line == "") {
+            doneWithHeaders = true;
+            continue;
+        }
 
-    for (const auto &line :
-         lines) { // Extract the name and value filed of headers.
-        std::string headerFieldDelimeter = ":";
-        auto pos = line.find(headerFieldDelimeter);
+        if (!doneWithHeaders) { // Extract the name and value filed of headers.
+            std::string headerFieldDelimeter = ":";
 
-        if (pos == 0) // Failed if header's name is blank.
-            return false;
-        else { // Set headers.
-            auto headerName = trim(line.substr(0, pos));
-            auto headerValue = trim(line.substr(pos + 1));
-            impl_->headers.emplace_back(headerName, headerValue);
+            auto pos = line.find(headerFieldDelimeter);
+
+            if (pos == 0) // Failed if header's name is blank.
+                return false;
+            else { // Set headers.
+                auto headerName = trim(line.substr(0, pos));
+                auto headerValue = trim(line.substr(pos + 1));
+                impl_->headers.emplace_back(headerName, headerValue);
+            }
+        } else { // Concat rest message to body.
+            impl_->body += trim(line);
         }
     }
 
