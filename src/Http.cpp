@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-07-27 17:03:54
+ * @LastEditTime: 2019-07-29 11:19:57
  * @Description: An implementation of class msg::Http.
  */
 #include <algorithm>
@@ -92,9 +92,18 @@ bool Http::parseFromMessage(const std::string &rawMessage) {
         lines.push_back(rawMessage.substr(start, offset - start));
         start = offset + lineTerminator.size();
         offset = rawMessage.find(lineTerminator, start);
+
+        if (offset - start > 998)
+            return false;
     }
-    if (start != rawMessage.length()) // Set body if exists.
-        impl_->body = trim(rawMessage.substr(start));
+    if (start != rawMessage.length()) { // Set body if exists.
+        std::string bodyMessage = trim(rawMessage.substr(start));
+        if (bodyMessage.length() > 998)
+            return false;
+
+        impl_->body = std::move(bodyMessage);
+        bodyMessage.clear();
+    }
 
     for (const auto &line :
          lines) { // Extract the name and value filed of headers.

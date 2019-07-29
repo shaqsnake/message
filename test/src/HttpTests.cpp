@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-07-27 17:04:35
+ * @LastEditTime: 2019-07-29 11:20:11
  * @Description: Unittests of class msg::Http.
  */
 #include <gtest/gtest.h>
@@ -94,7 +94,41 @@ TEST(HttpTests, ParseAndProduceHttpResponseString) {
         ++idx;
     }
 
-    ASSERT_EQ("Hello World! My payload includes a trailing CRLF.", http.getBody());
+    ASSERT_EQ("Hello World! My payload includes a trailing CRLF.",
+              http.getBody());
     ASSERT_FALSE(http.hasHeader("spma"));
     ASSERT_EQ(rawMessage, http.produceToMessage());
+}
+
+TEST(HttpTests, ParseHttpMessageWithBarlyValidLength) {
+    std::string longStr(998, 'x');
+
+    std::vector<std::string> testCases{
+        {"Host: www.example.com\r\nX-data: " + longStr.substr(8) + "\r\n\r\n"},
+        {"Host: www.example.com\r\n\r\n" + longStr + "\r\n"},
+    };
+
+    msg::Http http;
+    size_t idx = 0;
+    for (const auto &testCase : testCases) {
+        ASSERT_TRUE(http.parseFromMessage(testCase))
+            << ">>> Test is failed at " << idx << ". <<<";
+        ++idx;
+    }
+}
+
+TEST(HttpTests, ParseHttpMessageWithInvalidLength) {
+    std::string longStr(999, 'x');
+    std::vector<std::string> testCases{
+        {"Host: www.example.com\r\nX-data: " + longStr.substr(8) + "\r\n\r\n"},
+        {"Host: www.example.com\r\n\r\n" + longStr + "\r\n"},
+    };
+
+    msg::Http http;
+    size_t idx = 0;
+    for (const auto &testCase : testCases) {
+        ASSERT_FALSE(http.parseFromMessage(testCase))
+            << ">>> Test is failed at " << idx << ". <<<";
+        ++idx;
+    }
 }
