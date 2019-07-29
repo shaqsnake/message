@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-07-29 11:20:11
+ * @LastEditTime: 2019-07-29 17:17:10
  * @Description: Unittests of class msg::Http.
  */
 #include <gtest/gtest.h>
@@ -128,6 +128,56 @@ TEST(HttpTests, ParseHttpMessageWithInvalidLength) {
     size_t idx = 0;
     for (const auto &testCase : testCases) {
         ASSERT_FALSE(http.parseFromMessage(testCase))
+            << ">>> Test is failed at " << idx << ". <<<";
+        ++idx;
+    }
+}
+
+TEST(HttpTests, ParseHttpFoldingMessage) {
+    struct TestCase {
+        std::string rawString;
+        msg::Http::Headers expectedHeaders;
+        std::string expectedBody;
+    };
+    std::vector<TestCase> testCases{
+        {"Subject: This\r\n is a test\r\n\r\n",
+         {
+             {"Subject", "This is a test"},
+         },
+         ""},
+        {"Subject: This \r\nis a test\r\n\r\n",
+         {
+             {"Subject", "This is a test"},
+         },
+         ""},
+        {"Subject: This\r\n is a test \r\n\r\n",
+         {
+             {"Subject", "This is a test"},
+         },
+         ""},
+        {"Subject: This\r\n is a test \r\nHost: www.exa\r\nmple.com\r\n\r\n",
+         {{"Subject", "This is a test"}, {"Host", "www.example.com"}},
+         ""},
+        {"Host: www.example.com\r\n\r\nI'm \r\nbody.\r\n",
+         {
+             {"Host", "www.example.com"},
+         },
+         "I'm body."},
+         {"Host: www.\r\nexample.com \r\n\r\n I\r\n'm \r\nbody. \r\n",
+         {
+             {"Host", "www.example.com"},
+         },
+         "I'm body."},
+    };
+
+    size_t idx = 0;
+    for (const auto &testCase : testCases) {
+        msg::Http http;
+        ASSERT_TRUE(http.parseFromMessage(testCase.rawString))
+            << ">>> Test is failed at " << idx << ". <<<";
+        ASSERT_EQ(testCase.expectedHeaders, http.getHeaders())
+            << ">>> Test is failed at " << idx << ". <<<";
+        ASSERT_EQ(testCase.expectedBody, http.getBody())
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }

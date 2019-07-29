@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-07-29 16:17:40
+ * @LastEditTime: 2019-07-29 17:19:50
  * @Description: An implementation of class msg::Http.
  */
 #include <algorithm>
@@ -109,14 +109,12 @@ bool Http::parseFromMessage(const std::string &rawMessage) {
             std::string headerFieldDelimeter = ":";
 
             auto pos = line.find(headerFieldDelimeter);
+            if (pos == std::string::npos) {
+                impl_->headers.back().second += line;
+            } else { // Set headers.
 
                 auto headerName = line.substr(0, pos);
                 auto headerValue = line.substr(pos + 1);
-            if (pos == 0) // Failed if header's name is blank.
-                return false;
-            else { // Set headers.
-                auto headerName = trim(line.substr(0, pos));
-                auto headerValue = trim(line.substr(pos + 1));
                 impl_->headers.emplace_back(headerName, headerValue);
             }
         } else { // Concat rest message to body.
