@@ -3,12 +3,13 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-07-29 17:19:50
+ * @LastEditTime: 2019-07-30 11:38:07
  * @Description: An implementation of class msg::Http.
  */
 #include <algorithm>
 #include <iostream>
 #include <message/Http.hpp>
+#include <regex>
 #include <vector>
 
 namespace {
@@ -48,6 +49,20 @@ static inline void rtrim(std::string &s) {
 void trim(std::string &s) {
     ltrim(s);
     rtrim(s);
+}
+
+/**
+ * @description:
+ *     Check a string matches the pattern.
+ * @param[in] s
+ *     A string to be checked.
+ * @param[in] pattern
+ *     A pattern to check.
+ * @return:
+ *     An indicator whether or not was valid is return.
+ */
+bool isValid(const std::string &s, std::string pattern) {
+    return std::regex_match(s, std::regex(pattern));
 }
 
 } // namespace
@@ -114,7 +129,14 @@ bool Http::parseFromMessage(const std::string &rawMessage) {
             } else { // Set headers.
 
                 auto headerName = line.substr(0, pos);
+                // Printable US-ASCII characters except colon
+                if (!isValid(headerName, "[\x21-\x39\x3B-\x7E]*"))
+                    return false;
+
                 auto headerValue = line.substr(pos + 1);
+                // Printable US-ASCII characters and WSP characters
+                if (!isValid(headerValue, "[\x9\x20-\x7E]*"))
+                    return false;
                 impl_->headers.emplace_back(headerName, headerValue);
             }
         } else { // Concat rest message to body.

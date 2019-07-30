@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-07-29 17:17:10
+ * @LastEditTime: 2019-07-30 11:40:42
  * @Description: Unittests of class msg::Http.
  */
 #include <gtest/gtest.h>
@@ -163,7 +163,7 @@ TEST(HttpTests, ParseHttpFoldingMessage) {
              {"Host", "www.example.com"},
          },
          "I'm body."},
-         {"Host: www.\r\nexample.com \r\n\r\n I\r\n'm \r\nbody. \r\n",
+        {"Host: www.\r\nexample.com \r\n\r\n I\r\n'm \r\nbody. \r\n",
          {
              {"Host", "www.example.com"},
          },
@@ -178,6 +178,40 @@ TEST(HttpTests, ParseHttpFoldingMessage) {
         ASSERT_EQ(testCase.expectedHeaders, http.getHeaders())
             << ">>> Test is failed at " << idx << ". <<<";
         ASSERT_EQ(testCase.expectedBody, http.getBody())
+            << ">>> Test is failed at " << idx << ". <<<";
+        ++idx;
+    }
+}
+
+TEST(HttpTests, ParseFromMessageWithInvaildFormat) {
+    std::vector<std::string> testCases{
+        "Ho st: www.example.com\r\n\r\n",
+        "Ho\rst: www.example.com\r\n\r\n",
+        "Host: www.ex\rample.com\r\n\r\n",
+        "Host: www.ex\nample.com\r\n\r\n",
+        "Host: www.example.com\x7F\r\n\r\n",
+    };
+
+    size_t idx = 0;
+    for (const auto &testCase : testCases) {
+        msg::Http http;
+        ASSERT_FALSE(http.parseFromMessage(testCase))
+            << ">>> Test is failed at " << idx << ". <<<";
+        ++idx;
+    }
+}
+
+TEST(HttpTests, ParseFromMessageWithBarelyVaildFormat) {
+    std::vector<std::string> testCases{
+        "Host: www.ex ample.com\r\n\r\n",
+        "Host: www.ex\tample.com\r\n\r\n",
+        "Host: www.example.com~\r\n\r\n",
+    };
+
+    size_t idx = 0;
+    for (const auto &testCase : testCases) {
+        msg::Http http;
+        ASSERT_TRUE(http.parseFromMessage(testCase))
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }
