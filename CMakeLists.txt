@@ -7,11 +7,11 @@ project(${This} CXX)
 set(CMAKE_CXX_STANDARD 11)
 
 set(Headers
-    include/message/Http.hpp
+    include/message/Message.hpp
 )
 
 set (Sources
-    src/Http.cpp
+    src/Message.cpp
 )
 
 add_library(${This} STATIC ${Sources} ${Headers})

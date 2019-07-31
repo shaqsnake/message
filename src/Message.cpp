@@ -3,12 +3,12 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-07-31 09:42:45
- * @Description: An implementation of class msg::Http.
+ * @LastEditTime: 2019-07-31 15:50:54
+ * @Description: An implementation of class msg::Message.
  */
 #include <algorithm>
 #include <iostream>
-#include <message/Http.hpp>
+#include <message/Message.hpp>
 #include <regex>
 #include <vector>
 
@@ -69,35 +69,35 @@ bool isValid(const std::string &s, std::string pattern) {
 
 namespace msg {
 /**
- * The concrete implemetation of Http class.
+ * The concrete implemetation of Message class.
  */
-struct Http::Impl {
-    Http::Headers headers;
+struct Message::Impl {
+    Message::Headers headers;
     std::string body;
 };
-
+ 
 /**
  * Constructor.
  */
-Http::Http() : impl_(new Impl) {}
+Message::Message() : impl_(new Impl) {}
 
 /**
  * Destructor by default.
  */
-Http::~Http() noexcept = default;
+Message::~Message() noexcept = default;
 
 // Public methods
 /**
  * @description:
- *     Parse a raw http message into an object,
+ *     Parse a raw Message message into an object,
  *     that contains components of headers, body and etc.
  * @param[in] rawMessage
- *     A raw string in http message format.
+ *     A raw string in Message message format.
  * @return:
  *     An identicator of whether or not the parse process
  *     was successful is returned.
  */
-bool Http::parseFromMessage(const std::string &rawMessage) {
+bool Message::parseFromMessage(const std::string &rawMessage) {
     std::string lineTerminator = "\r\n";
     std::vector<std::string> lines; // Store the splited parts of message.
     std::string::size_type start = 0;
@@ -157,11 +157,11 @@ bool Http::parseFromMessage(const std::string &rawMessage) {
 
 /**
  * @description:
- *     Produce http components to a complete http message.
+ *     Produce message components to a complete message.
  * @return:
- *     A http message including headers and body.
+ *     A message text including headers and body.
  */
-std::string Http::produceToMessage() const {
+std::string Message::produceToMessage() const {
     std::string targetMessage;
     for (const auto &header : impl_->headers) {
         targetMessage += header.first + ": " + header.second + "\r\n";
@@ -178,9 +178,9 @@ std::string Http::produceToMessage() const {
  * @description:
  *     Get the all headers.
  * @return:
- *     Headers parsed from a raw http message.
+ *     Headers parsed from a raw message.
  */
-Http::Headers Http::getHeaders() const { return impl_->headers; }
+Message::Headers Message::getHeaders() const { return impl_->headers; }
 
 /**
  * @description:
@@ -191,7 +191,7 @@ Http::Headers Http::getHeaders() const { return impl_->headers; }
  *     An indicator of whether or not the header's name was exist
  *     is returned.
  */
-bool Http::hasHeader(const std::string &headerName) const {
+bool Message::hasHeader(const std::string &headerName) const {
     for (const auto &header : impl_->headers) {
         if (header.first == headerName)
             return true;
@@ -207,7 +207,7 @@ bool Http::hasHeader(const std::string &headerName) const {
  * @return:
  *     The header's value which indexed by its name.
  */
-std::string Http::getHeaderValue(const std::string &headerName) const {
+std::string Message::getHeaderValue(const std::string &headerName) const {
     for (const auto &header : impl_->headers) {
         if (header.first == headerName)
             return header.second;
@@ -221,6 +221,6 @@ std::string Http::getHeaderValue(const std::string &headerName) const {
  * @return:
  *     A text of message body.
  */
-std::string Http::getBody() const { return impl_->body; }
+std::string Message::getBody() const { return impl_->body; }
 
 } // namespace msg

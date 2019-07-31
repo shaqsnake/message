@@ -3,16 +3,16 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-07-30 11:40:42
- * @Description: Unittests of class msg::Http.
+ * @LastEditTime: 2019-07-31 15:55:43
+ * @Description: Unittests of class msg::msg.
  */
 #include <gtest/gtest.h>
-#include <message/Http.hpp>
+#include <message/Message.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-TEST(HttpTests, ParseAndProduceHttpRequestString) {
+TEST(MessageTests, ParseAndProduceHttpRequestString) {
     std::string rawMessage =
         "User-Agent: curl/7.16.3 libcurl/7.16.3 OpenSSL/0.9.7l zlib/1.2.3\r\n"
         "Host: www.example.com\r\n"
@@ -30,27 +30,26 @@ TEST(HttpTests, ParseAndProduceHttpRequestString) {
         {"Accept-Language", "en, mi"},
     };
 
-    msg::Http http;
-    ASSERT_TRUE(http.parseFromMessage(rawMessage));
+    msg::Message msg;
+    ASSERT_TRUE(msg.parseFromMessage(rawMessage));
 
-    auto headers = http.getHeaders();
+    auto headers = msg.getHeaders();
     ASSERT_EQ(expectedHeaders.size(), headers.size());
 
     size_t idx = 0;
     for (const auto &expectedHeader : expectedHeaders) {
-        ASSERT_TRUE(http.hasHeader(expectedHeader.name));
-        ASSERT_EQ(expectedHeader.value,
-                  http.getHeaderValue(expectedHeader.name))
+        ASSERT_TRUE(msg.hasHeader(expectedHeader.name));
+        ASSERT_EQ(expectedHeader.value, msg.getHeaderValue(expectedHeader.name))
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }
 
-    ASSERT_EQ("", http.getBody());
-    ASSERT_FALSE(http.hasHeader("spma"));
-    ASSERT_EQ(rawMessage, http.produceToMessage());
+    ASSERT_EQ("", msg.getBody());
+    ASSERT_FALSE(msg.hasHeader("spma"));
+    ASSERT_EQ(rawMessage, msg.produceToMessage());
 }
 
-TEST(HttpTests, ParseAndProduceHttpResponseString) {
+TEST(MessageTests, ParseAndProduceHttpResponseString) {
     std::string rawMessage =
         "Date: Mon, 27 Jul 2009 12:28:53 GMT\r\n"
         "Server: Apache\r\n"
@@ -79,28 +78,27 @@ TEST(HttpTests, ParseAndProduceHttpResponseString) {
         {"Content-Type", "text/plain"},
     };
 
-    msg::Http http;
-    ASSERT_TRUE(http.parseFromMessage(rawMessage));
+    msg::Message msg;
+    ASSERT_TRUE(msg.parseFromMessage(rawMessage));
 
-    auto headers = http.getHeaders();
+    auto headers = msg.getHeaders();
     ASSERT_EQ(expectedHeaders.size(), headers.size());
 
     size_t idx = 0;
     for (const auto &expectedHeader : expectedHeaders) {
-        ASSERT_TRUE(http.hasHeader(expectedHeader.name));
-        ASSERT_EQ(expectedHeader.value,
-                  http.getHeaderValue(expectedHeader.name))
+        ASSERT_TRUE(msg.hasHeader(expectedHeader.name));
+        ASSERT_EQ(expectedHeader.value, msg.getHeaderValue(expectedHeader.name))
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }
 
     ASSERT_EQ("Hello World! My payload includes a trailing CRLF.",
-              http.getBody());
-    ASSERT_FALSE(http.hasHeader("spma"));
-    ASSERT_EQ(rawMessage, http.produceToMessage());
+              msg.getBody());
+    ASSERT_FALSE(msg.hasHeader("spma"));
+    ASSERT_EQ(rawMessage, msg.produceToMessage());
 }
 
-TEST(HttpTests, ParseHttpMessageWithBarlyValidLength) {
+TEST(MessageTests, ParseMessageWithBarlyValidLength) {
     std::string longStr(998, 'x');
 
     std::vector<std::string> testCases{
@@ -108,35 +106,35 @@ TEST(HttpTests, ParseHttpMessageWithBarlyValidLength) {
         {"Host: www.example.com\r\n\r\n" + longStr + "\r\n"},
     };
 
-    msg::Http http;
+    msg::Message msg;
     size_t idx = 0;
     for (const auto &testCase : testCases) {
-        ASSERT_TRUE(http.parseFromMessage(testCase))
+        ASSERT_TRUE(msg.parseFromMessage(testCase))
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }
 }
 
-TEST(HttpTests, ParseHttpMessageWithInvalidLength) {
+TEST(MessageTests, ParseMessageWithInvalidLength) {
     std::string longStr(999, 'x');
     std::vector<std::string> testCases{
         {"Host: www.example.com\r\nX-data: " + longStr.substr(8) + "\r\n\r\n"},
         {"Host: www.example.com\r\n\r\n" + longStr + "\r\n"},
     };
 
-    msg::Http http;
+    msg::Message msg;
     size_t idx = 0;
     for (const auto &testCase : testCases) {
-        ASSERT_FALSE(http.parseFromMessage(testCase))
+        ASSERT_FALSE(msg.parseFromMessage(testCase))
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }
 }
 
-TEST(HttpTests, ParseHttpFoldingMessage) {
+TEST(MessageTests, ParseFromFoldingMessage) {
     struct TestCase {
         std::string rawString;
-        msg::Http::Headers expectedHeaders;
+        msg::Message::Headers expectedHeaders;
         std::string expectedBody;
     };
     std::vector<TestCase> testCases{
@@ -172,36 +170,34 @@ TEST(HttpTests, ParseHttpFoldingMessage) {
 
     size_t idx = 0;
     for (const auto &testCase : testCases) {
-        msg::Http http;
-        ASSERT_TRUE(http.parseFromMessage(testCase.rawString))
+        msg::Message msg;
+        ASSERT_TRUE(msg.parseFromMessage(testCase.rawString))
             << ">>> Test is failed at " << idx << ". <<<";
-        ASSERT_EQ(testCase.expectedHeaders, http.getHeaders())
+        ASSERT_EQ(testCase.expectedHeaders, msg.getHeaders())
             << ">>> Test is failed at " << idx << ". <<<";
-        ASSERT_EQ(testCase.expectedBody, http.getBody())
+        ASSERT_EQ(testCase.expectedBody, msg.getBody())
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }
 }
 
-TEST(HttpTests, ParseFromMessageWithInvaildFormat) {
+TEST(MessageTests, ParseFromMessageWithInvaildFormat) {
     std::vector<std::string> testCases{
-        "Ho st: www.example.com\r\n\r\n",
-        "Ho\rst: www.example.com\r\n\r\n",
-        "Host: www.ex\rample.com\r\n\r\n",
-        "Host: www.ex\nample.com\r\n\r\n",
+        "Ho st: www.example.com\r\n\r\n",    "Ho\rst: www.example.com\r\n\r\n",
+        "Host: www.ex\rample.com\r\n\r\n",   "Host: www.ex\nample.com\r\n\r\n",
         "Host: www.example.com\x7F\r\n\r\n",
     };
 
     size_t idx = 0;
     for (const auto &testCase : testCases) {
-        msg::Http http;
-        ASSERT_FALSE(http.parseFromMessage(testCase))
+        msg::Message msg;
+        ASSERT_FALSE(msg.parseFromMessage(testCase))
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }
 }
 
-TEST(HttpTests, ParseFromMessageWithBarelyVaildFormat) {
+TEST(MessageTests, ParseFromMessageWithBarelyVaildFormat) {
     std::vector<std::string> testCases{
         "Host: www.ex ample.com\r\n\r\n",
         "Host: www.ex\tample.com\r\n\r\n",
@@ -210,8 +206,8 @@ TEST(HttpTests, ParseFromMessageWithBarelyVaildFormat) {
 
     size_t idx = 0;
     for (const auto &testCase : testCases) {
-        msg::Http http;
-        ASSERT_TRUE(http.parseFromMessage(testCase))
+        msg::Message msg;
+        ASSERT_TRUE(msg.parseFromMessage(testCase))
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }

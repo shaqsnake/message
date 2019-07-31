@@ -3,11 +3,11 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:27:32
- * @LastEditTime: 2019-07-27 16:56:01
- * @Description: A declaration of class msg::Http.
+ * @LastEditTime: 2019-07-31 15:49:11
+ * @Description: A declaration of class msg::Message.
  */
-#ifndef MESSAGE_HTTP_HPP
-#define MESSAGE_HTTP_HPP
+#ifndef MESSAGE_MESSAGE_HPP
+#define MESSAGE_MESSAGE_HPP
 
 #include <memory>
 #include <string>
@@ -15,14 +15,14 @@
 
 namespace msg {
 
-class Http {
+class Message {
 public:
-    Http();
-    ~Http();
-    Http(const Http &) = delete;
-    Http(Http &&) = delete;
-    Http &operator=(const Http &) = delete;
-    Http &operator=(Http &&) = delete;
+    Message();
+    ~Message();
+    Message(const Message &) = delete;
+    Message(Message &&) = delete;
+    Message &operator=(const Message &) = delete;
+    Message &operator=(Message &&) = delete;
 
 public:
     typedef std::vector<std::pair<std::string, std::string>> Headers;
@@ -41,4 +41,4 @@ private:
 
 } // namespace msg
 
-#endif // MESSAGE_HTTP_HPP
+#endif // MESSAGE_MESSAGE_HPP
