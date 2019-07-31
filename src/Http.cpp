@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-07-30 11:38:07
+ * @LastEditTime: 2019-07-31 09:42:45
  * @Description: An implementation of class msg::Http.
  */
 #include <algorithm>
@@ -215,6 +215,12 @@ std::string Http::getHeaderValue(const std::string &headerName) const {
     return "";
 }
 
+/**
+ * @description:
+ *     Get message body text.
+ * @return:
+ *     A text of message body.
+ */
 std::string Http::getBody() const { return impl_->body; }
 
 } // namespace msg
