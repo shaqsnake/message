@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-07-31 15:50:54
+ * @LastEditTime: 2019-08-01 10:59:08
  * @Description: An implementation of class msg::Message.
  */
 #include <algorithm>
@@ -75,7 +75,7 @@ struct Message::Impl {
     Message::Headers headers;
     std::string body;
 };
- 
+
 /**
  * Constructor.
  */
@@ -197,6 +197,28 @@ bool Message::hasHeader(const std::string &headerName) const {
             return true;
     }
     return false;
+}
+
+/**
+ * @description:
+ *     Set message header by its name and value.
+ * @param[in] headerName
+ *     A header's name to identity header.
+ * @param[in] headerValue
+ *     A heaser's value to be set according to its name.
+ * @return:
+ */
+void Message::setHeader(const std::string &headerName,
+                        const std::string &headerValue) {
+    for (auto &header : impl_->headers) {
+        if (header.first == headerName) {
+            header.second = headerValue;
+            return;
+        }
+    }
+
+    impl_->headers.emplace_back(headerName, headerValue);
+    return;
 }
 
 /**

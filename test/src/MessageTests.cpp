@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-07-31 15:55:43
+ * @LastEditTime: 2019-08-01 11:07:29
  * @Description: Unittests of class msg::msg.
  */
 #include <gtest/gtest.h>
@@ -211,4 +211,35 @@ TEST(MessageTests, ParseFromMessageWithBarelyVaildFormat) {
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }
+}
+
+TEST(MessageTests, SetMessageHeaders) {
+    struct TestCase {
+        std::string name;
+        std::string value;
+    };
+
+    std::vector<TestCase> testCases{
+        {"Host", "www.example.com"},
+        {"X-Data", "XXX"},
+        {"Host", "www.foo.com/bar?zoo#spam"},
+    };
+
+    std::string expectedMessage = 
+        "Host: www.foo.com/bar?zoo#spam\r\n"
+        "X-Data: XXX\r\n"
+        "\r\n";
+
+    msg::Message msg;
+    size_t idx = 0;
+    for (const auto &testCase : testCases) {
+        msg.setHeader(testCase.name, testCase.value);
+        ASSERT_TRUE(msg.hasHeader(testCase.name))
+            << ">>> Test is failed at " << idx << ". <<<";
+        ASSERT_EQ(testCase.value, msg.getHeaderValue(testCase.name))
+            << ">>> Test is failed at " << idx << ". <<<";
+        ++idx;
+    }
+
+    ASSERT_EQ(expectedMessage, msg.produceToMessage());
 }
