@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-08-01 10:59:08
+ * @LastEditTime: 2019-08-01 11:28:47
  * @Description: An implementation of class msg::Message.
  */
 #include <algorithm>
@@ -244,5 +244,14 @@ std::string Message::getHeaderValue(const std::string &headerName) const {
  *     A text of message body.
  */
 std::string Message::getBody() const { return impl_->body; }
+
+/**
+ * @description:
+ *    Set message body by a text.
+ * @param[in] bodyText
+ *    A text should be set to message body compoent.
+ * @return:
+ */
+void Message::setBody(const std::string &bodyText) { impl_->body = bodyText; }
 
 } // namespace msg

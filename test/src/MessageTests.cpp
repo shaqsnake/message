@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-08-01 11:07:29
+ * @LastEditTime: 2019-08-01 11:24:56
  * @Description: Unittests of class msg::msg.
  */
 #include <gtest/gtest.h>
@@ -213,7 +213,7 @@ TEST(MessageTests, ParseFromMessageWithBarelyVaildFormat) {
     }
 }
 
-TEST(MessageTests, SetMessageHeaders) {
+TEST(MessageTests, SetMessageHeadersAndBody) {
     struct TestCase {
         std::string name;
         std::string value;
@@ -222,13 +222,17 @@ TEST(MessageTests, SetMessageHeaders) {
     std::vector<TestCase> testCases{
         {"Host", "www.example.com"},
         {"X-Data", "XXX"},
+        {"X-data", "XxX"},
         {"Host", "www.foo.com/bar?zoo#spam"},
     };
 
+    std::string bodyText = "I'm body!";
     std::string expectedMessage = 
         "Host: www.foo.com/bar?zoo#spam\r\n"
         "X-Data: XXX\r\n"
-        "\r\n";
+        "X-data: XxX\r\n"
+        "\r\n"
+        "I'm body!\r\n";
 
     msg::Message msg;
     size_t idx = 0;
@@ -241,5 +245,7 @@ TEST(MessageTests, SetMessageHeaders) {
         ++idx;
     }
 
+    msg.setBody(bodyText);
+    ASSERT_EQ(bodyText, msg.getBody());
     ASSERT_EQ(expectedMessage, msg.produceToMessage());
 }

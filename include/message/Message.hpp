@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:27:32
- * @LastEditTime: 2019-08-01 11:07:46
+ * @LastEditTime: 2019-08-01 11:19:28
  * @Description: A declaration of class msg::Message.
  */
 #ifndef MESSAGE_MESSAGE_HPP
@@ -34,6 +34,7 @@ public:
     void setHeader(const std::string &headerName, const std::string &headerValue);
     std::string getHeaderValue(const std::string &headerName) const;
     std::string getBody() const;
+    void setBody(const std::string &bodyText);
 
 private:
     struct Impl;
