@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:27:32
- * @LastEditTime: 2019-08-01 15:54:17
+ * @LastEditTime: 2019-08-01 17:14:54
  * @Description: A declaration of class msg::Message.
  */
 #ifndef MESSAGE_MESSAGE_HPP
@@ -17,8 +17,8 @@ namespace msg {
 
 class Message {
 public:
-    Message();
-    ~Message();
+    Message() = default;
+    ~Message() = default;
     Message(const Message &) = delete;
     Message(Message &&) = delete;
     Message &operator=(const Message &) = delete;
@@ -38,8 +38,9 @@ public:
     void setLineLength(size_t maxLength);
 
 private:
-    struct Impl;
-    std::unique_ptr<struct Impl> impl_;
+    Message::Headers headers_;
+    std::string body_;
+    size_t maxLineLength_ = 0;
 };
 
 } // namespace msg

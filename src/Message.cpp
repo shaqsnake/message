@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-08-01 16:48:58
+ * @LastEditTime: 2019-08-01 17:16:48
  * @Description: An implementation of class msg::Message.
  */
 #include <algorithm>
@@ -68,25 +68,6 @@ bool isValid(const std::string &s, std::string pattern) {
 } // namespace
 
 namespace msg {
-/**
- * The concrete implemetation of Message class.
- */
-struct Message::Impl {
-    Message::Headers headers;
-    std::string body;
-    size_t maxLineLength = 0;
-};
-
-/**
- * Constructor.
- */
-Message::Message() : impl_(new Impl) {}
-
-/**
- * Destructor by default.
- */
-Message::~Message() noexcept = default;
-
 // Public methods
 /**
  * @description:
@@ -109,8 +90,8 @@ bool Message::parseFromMessage(const std::string &rawMessage) {
         start = offset + lineTerminator.size();
         offset = rawMessage.find(lineTerminator, start);
 
-        if (offset != std::string::npos && impl_->maxLineLength &&
-            offset - start + 2 > impl_->maxLineLength)
+        if (offset != std::string::npos && maxLineLength_ &&
+            offset - start + 2 > maxLineLength_)
             return false;
     }
 
@@ -127,7 +108,7 @@ bool Message::parseFromMessage(const std::string &rawMessage) {
 
             auto pos = line.find(headerFieldDelimeter);
             if (pos == std::string::npos) {
-                impl_->headers.back().second += line;
+                headers_.back().second += line;
             } else { // Set headers.
 
                 auto headerName = line.substr(0, pos);
@@ -139,20 +120,20 @@ bool Message::parseFromMessage(const std::string &rawMessage) {
                 // Printable US-ASCII characters and WSP characters
                 if (!isValid(headerValue, "[\x9\x20-\x7E]*"))
                     return false;
-                impl_->headers.emplace_back(headerName, headerValue);
+                headers_.emplace_back(headerName, headerValue);
             }
         } else { // Concat rest message to body.
-            impl_->body += line;
+            body_ += line;
         }
     }
 
     // Trim whitespace characters of all headers and body field.
-    for (auto &header : impl_->headers) {
+    for (auto &header : headers_) {
         trim(header.first);
         trim(header.second);
     }
-    if (impl_->body.length())
-        trim(impl_->body);
+    if (body_.length())
+        trim(body_);
 
     return true;
 }
@@ -165,13 +146,13 @@ bool Message::parseFromMessage(const std::string &rawMessage) {
  */
 std::string Message::produceToMessage() const {
     std::string targetMessage;
-    for (const auto &header : impl_->headers) {
+    for (const auto &header : headers_) {
         targetMessage += header.first + ": " + header.second + "\r\n";
     }
 
     targetMessage += "\r\n";
-    if (!impl_->body.empty())
-        targetMessage += impl_->body + "\r\n";
+    if (!body_.empty())
+        targetMessage += body_ + "\r\n";
 
     return targetMessage;
 }
@@ -182,7 +163,7 @@ std::string Message::produceToMessage() const {
  * @return:
  *     Headers parsed from a raw message.
  */
-Message::Headers Message::getHeaders() const { return impl_->headers; }
+Message::Headers Message::getHeaders() const { return headers_; }
 
 /**
  * @description:
@@ -194,7 +175,7 @@ Message::Headers Message::getHeaders() const { return impl_->headers; }
  *     is returned.
  */
 bool Message::hasHeader(const std::string &headerName) const {
-    for (const auto &header : impl_->headers) {
+    for (const auto &header : headers_) {
         if (header.first == headerName)
             return true;
     }
@@ -212,14 +193,14 @@ bool Message::hasHeader(const std::string &headerName) const {
  */
 void Message::setHeader(const std::string &headerName,
                         const std::string &headerValue) {
-    for (auto &header : impl_->headers) {
+    for (auto &header : headers_) {
         if (header.first == headerName) {
             header.second = headerValue;
             return;
         }
     }
 
-    impl_->headers.emplace_back(headerName, headerValue);
+    headers_.emplace_back(headerName, headerValue);
     return;
 }
 
@@ -232,7 +213,7 @@ void Message::setHeader(const std::string &headerName,
  *     The header's value which indexed by its name.
  */
 std::string Message::getHeaderValue(const std::string &headerName) const {
-    for (const auto &header : impl_->headers) {
+    for (const auto &header : headers_) {
         if (header.first == headerName)
             return header.second;
     }
@@ -245,7 +226,7 @@ std::string Message::getHeaderValue(const std::string &headerName) const {
  * @return:
  *     A text of message body.
  */
-std::string Message::getBody() const { return impl_->body; }
+std::string Message::getBody() const { return body_; }
 
 /**
  * @description:
@@ -254,7 +235,7 @@ std::string Message::getBody() const { return impl_->body; }
  *    A text should be set to message body compoent.
  * @return:
  */
-void Message::setBody(const std::string &bodyText) { impl_->body = bodyText; }
+void Message::setBody(const std::string &bodyText) { body_ = bodyText; }
 
 /**
  * @description:
@@ -263,7 +244,7 @@ void Message::setBody(const std::string &bodyText) { impl_->body = bodyText; }
  *     A number to limit message each line length.
  */
 void Message::setLineLength(size_t maxLength) {
-    impl_->maxLineLength = maxLength;
+    maxLineLength_ = maxLength;
 }
 
 } // namespace msg
