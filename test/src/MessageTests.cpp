@@ -222,7 +222,6 @@ TEST(MessageTests, SetMessageHeadersAndBody) {
     std::vector<TestCase> testCases{
         {"Host", "www.example.com"},
         {"X-Data", "XXX"},
-        {"X-data", "XxX"},
         {"Host", "www.foo.com/bar?zoo#spam"},
     };
 
@@ -230,7 +229,6 @@ TEST(MessageTests, SetMessageHeadersAndBody) {
     std::string expectedMessage = 
         "Host: www.foo.com/bar?zoo#spam\r\n"
         "X-Data: XXX\r\n"
-        "X-data: XxX\r\n"
         "\r\n"
         "I'm body!\r\n";
 
