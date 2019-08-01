@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-08-01 11:28:47
+ * @LastEditTime: 2019-08-01 16:48:58
  * @Description: An implementation of class msg::Message.
  */
 #include <algorithm>
@@ -74,6 +74,7 @@ namespace msg {
 struct Message::Impl {
     Message::Headers headers;
     std::string body;
+    size_t maxLineLength = 0;
 };
 
 /**
@@ -108,7 +109,8 @@ bool Message::parseFromMessage(const std::string &rawMessage) {
         start = offset + lineTerminator.size();
         offset = rawMessage.find(lineTerminator, start);
 
-        if (offset != std::string::npos && offset - start > 998)
+        if (offset != std::string::npos && impl_->maxLineLength &&
+            offset - start + 2 > impl_->maxLineLength)
             return false;
     }
 
@@ -253,5 +255,15 @@ std::string Message::getBody() const { return impl_->body; }
  * @return:
  */
 void Message::setBody(const std::string &bodyText) { impl_->body = bodyText; }
+
+/**
+ * @description:
+ *     Set line length limit number.
+ * @param[in] maxLength
+ *     A number to limit message each line length.
+ */
+void Message::setLineLength(size_t maxLength) {
+    impl_->maxLineLength = maxLength;
+}
 
 } // namespace msg

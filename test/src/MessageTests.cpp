@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-08-01 11:24:56
+ * @LastEditTime: 2019-08-01 16:50:42
  * @Description: Unittests of class msg::msg.
  */
 #include <gtest/gtest.h>
@@ -107,6 +107,7 @@ TEST(MessageTests, ParseMessageWithBarlyValidLength) {
     };
 
     msg::Message msg;
+    msg.setLineLength(1000);
     size_t idx = 0;
     for (const auto &testCase : testCases) {
         ASSERT_TRUE(msg.parseFromMessage(testCase))
@@ -123,6 +124,7 @@ TEST(MessageTests, ParseMessageWithInvalidLength) {
     };
 
     msg::Message msg;
+    msg.setLineLength(1000);
     size_t idx = 0;
     for (const auto &testCase : testCases) {
         ASSERT_FALSE(msg.parseFromMessage(testCase))
