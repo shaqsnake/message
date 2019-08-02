@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-08-01 17:16:48
+ * @LastEditTime: 2019-08-02 16:10:13
  * @Description: An implementation of class msg::Message.
  */
 #include <algorithm>
@@ -90,6 +90,7 @@ bool Message::parseFromMessage(const std::string &rawMessage) {
         start = offset + lineTerminator.size();
         offset = rawMessage.find(lineTerminator, start);
 
+        // Line length exceed the limitation.
         if (offset != std::string::npos && maxLineLength_ &&
             offset - start + 2 > maxLineLength_)
             return false;
@@ -146,14 +147,18 @@ bool Message::parseFromMessage(const std::string &rawMessage) {
  */
 std::string Message::produceToMessage() const {
     std::string targetMessage;
-    for (const auto &header : headers_) {
-        targetMessage += header.first + ": " + header.second + "\r\n";
+    std::vector<std::string> lines;
+
+    dumpToVec(lines);
+
+    // Fold message if set max line length
+    if (maxLineLength_) {
+        foldMessageLines(lines, maxLineLength_);
     }
 
-    targetMessage += "\r\n";
-    if (!body_.empty())
-        targetMessage += body_ + "\r\n";
-
+    for (const auto &line : lines) {
+        targetMessage += line + "\r\n";
+    }
     return targetMessage;
 }
 
@@ -243,8 +248,69 @@ void Message::setBody(const std::string &bodyText) { body_ = bodyText; }
  * @param[in] maxLength
  *     A number to limit message each line length.
  */
-void Message::setLineLength(size_t maxLength) {
-    maxLineLength_ = maxLength;
+void Message::setLineLength(size_t maxLength) { maxLineLength_ = maxLength; }
+
+// Private methods
+/**
+ * @description:
+ *     Dump massge headers and body to a container.
+ * @param[out] vec
+ *     A vector container to store message headers and body.
+ */
+void Message::dumpToVec(std::vector<std::string> &vec) const {
+    for (const auto &header : headers_) {
+        vec.push_back(header.first + ": " + header.second);
+    }
+    vec.push_back("");
+    if (!body_.empty()) {
+        vec.push_back(body_);
+    }
+}
+
+/**
+ * @description:
+ *     Fold message lines by lenght limitation, always break line into segments
+ *     at whitespace charater if any.
+ * @param[in|out] lines
+ *     The lines should be folded.
+ * @param[in] maxLength
+ *     The max characters limitation per line.
+ */
+void Message::foldMessageLines(std::vector<std::string> &dest,
+                               size_t maxLength) const {
+    std::vector<std::string> orig = std::move(dest);
+    dest.clear();
+    for (auto &line : orig) {
+        if (line == "") { // Keep the blank line.
+            dest.push_back(line);
+            continue;
+        }
+
+        std::string buffer;
+        while (line.size()) {
+            auto offset = line.find_first_of(" \t\v\f");
+            if (offset != std::string::npos) { // Splite string by WSP and
+                                               // concat to buffer.
+                buffer += line.substr(0, offset + 1);
+                line.erase(0, offset + 1);
+            } else { // No any WSP in the line.
+                buffer += line.substr();
+                line.erase();
+            }
+
+            // Push every line in limit length.
+            if (buffer.length() + 2 > maxLength) {
+                auto lastWSP = buffer.find_last_of(" \t\v\f");
+                if (lastWSP != 0) {
+                    dest.push_back(buffer.substr(0, lastWSP));
+                    buffer.erase(0, lastWSP);
+                }
+            }
+        }
+
+        if (buffer.size())
+            dest.push_back(buffer);
+    }
 }
 
 } // namespace msg

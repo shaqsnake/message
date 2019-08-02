@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-08-01 16:50:42
+ * @LastEditTime: 2019-08-02 15:49:51
  * @Description: Unittests of class msg::msg.
  */
 #include <gtest/gtest.h>
@@ -228,11 +228,10 @@ TEST(MessageTests, SetMessageHeadersAndBody) {
     };
 
     std::string bodyText = "I'm body!";
-    std::string expectedMessage = 
-        "Host: www.foo.com/bar?zoo#spam\r\n"
-        "X-Data: XXX\r\n"
-        "\r\n"
-        "I'm body!\r\n";
+    std::string expectedMessage = "Host: www.foo.com/bar?zoo#spam\r\n"
+                                  "X-Data: XXX\r\n"
+                                  "\r\n"
+                                  "I'm body!\r\n";
 
     msg::Message msg;
     size_t idx = 0;
@@ -248,4 +247,38 @@ TEST(MessageTests, SetMessageHeadersAndBody) {
     msg.setBody(bodyText);
     ASSERT_EQ(bodyText, msg.getBody());
     ASSERT_EQ(expectedMessage, msg.produceToMessage());
+}
+
+TEST(MessageTests, ProduceToMessageByFolding) {
+    struct TestCase {
+        std::string rawMessage;
+        size_t maxLength;
+        std::string expectMessage;
+    };
+
+    std::vector<TestCase> testCases {
+        {"Subject: This is a test\r\n\r\n", 0, "Subject: This is a test\r\n\r\n"},
+        {"Subject: This is a test\r\n\r\n", 14, "Subject: This\r\n is a test\r\n\r\n"},
+        {"Subject: This\tis\ta\ttest\r\n\r\n", 14, "Subject: This\r\n\tis\ta\ttest\r\n\r\n"},
+        {"Subject: This is a test\r\n\r\n", 15, "Subject: This\r\n is a test\r\n\r\n"},
+        {"Subject: This is a test\r\n\r\n", 16, "Subject: This is\r\n a test\r\n\r\n"},
+        {"Subject: This is a test\r\n\r\n", 20, "Subject: This is a\r\n test\r\n\r\n"},
+        {"Subject: This is a test\r\n\r\n", 10, "Subject:\r\n This is\r\n a test\r\n\r\n"},
+        {"Subject: This is a test\r\n\r\n", 5, "Subject:\r\n This\r\n is\r\n a\r\n test\r\n\r\n"},
+        {"Subject: This is a test\r\nX-Data: xxxxxx xxx\r\n\r\n", 5, "Subject:\r\n This\r\n is\r\n a\r\n test\r\nX-Data:\r\n xxxxxx\r\n xxx\r\n\r\n"},
+        {"Subject: This is a test\r\nX-Data: xxxxxx xxx\r\n\r\nI'm\tbody!!!\r\n", 5, "Subject:\r\n This\r\n is\r\n a\r\n test\r\nX-Data:\r\n xxxxxx\r\n xxx\r\n\r\nI'm\r\n\tbody!!!\r\n"},
+    };
+
+    size_t idx = 0;
+    for (const auto &testCase : testCases) {
+        msg::Message msg;
+        ASSERT_TRUE(msg.parseFromMessage(testCase.rawMessage))
+            << ">>> Test is failed at " << idx << ". <<<";
+        // ASSERT_EQ(testCase.rawMessage, msg.produceToMessage())
+        //     << ">>> Test is failed at " << idx << ". <<<";
+        if (testCase.maxLength) msg.setLineLength(testCase.maxLength);
+        ASSERT_EQ(testCase.expectMessage, msg.produceToMessage())
+            << ">>> Test is failed at " << idx << ". <<<";
+        ++idx;
+    }
 }
