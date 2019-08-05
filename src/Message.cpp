@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-08-02 16:10:13
+ * @LastEditTime: 2019-08-05 14:58:14
  * @Description: An implementation of class msg::Message.
  */
 #include <algorithm>
@@ -280,6 +280,8 @@ void Message::foldMessageLines(std::vector<std::string> &dest,
                                size_t maxLength) const {
     std::vector<std::string> orig = std::move(dest);
     dest.clear();
+
+    std::string whitespaces = " \t\f\v";
     for (auto &line : orig) {
         if (line == "") { // Keep the blank line.
             dest.push_back(line);
@@ -288,11 +290,12 @@ void Message::foldMessageLines(std::vector<std::string> &dest,
 
         std::string buffer;
         while (line.size()) {
-            auto offset = line.find_first_of(" \t\v\f");
-            if (offset != std::string::npos) { // Splite string by WSP and
+            auto splitPos = line.find_first_of(whitespaces);
+            if (splitPos != std::string::npos) { // Splite string by WSP and
                                                // concat to buffer.
-                buffer += line.substr(0, offset + 1);
-                line.erase(0, offset + 1);
+                auto offset = line.find_first_not_of(whitespaces, splitPos);
+                buffer += line.substr(0, offset);
+                line.erase(0, offset);
             } else { // No any WSP in the line.
                 buffer += line.substr();
                 line.erase();
@@ -300,16 +303,23 @@ void Message::foldMessageLines(std::vector<std::string> &dest,
 
             // Push every line in limit length.
             if (buffer.length() + 2 > maxLength) {
-                auto lastWSP = buffer.find_last_of(" \t\v\f");
+                auto lastWSP = buffer.find_last_of(whitespaces);
                 if (lastWSP != 0) {
-                    dest.push_back(buffer.substr(0, lastWSP));
+                    // Break line at WSP.
+                    std::string newLine = buffer.substr(0, lastWSP);
+                    rtrim(newLine);
+                    dest.push_back(newLine);
                     buffer.erase(0, lastWSP);
                 }
             }
         }
 
-        if (buffer.size())
+        if (buffer.size()) {
+            // Keep only one space at the head of a line.
+            ltrim(buffer);
+            buffer.insert(0, " ");
             dest.push_back(buffer);
+        }
     }
 }
 

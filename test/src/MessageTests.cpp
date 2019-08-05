@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-08-02 15:49:51
+ * @LastEditTime: 2019-08-05 14:51:03
  * @Description: Unittests of class msg::msg.
  */
 #include <gtest/gtest.h>
@@ -258,15 +258,18 @@ TEST(MessageTests, ProduceToMessageByFolding) {
 
     std::vector<TestCase> testCases {
         {"Subject: This is a test\r\n\r\n", 0, "Subject: This is a test\r\n\r\n"},
+        {"Subject: This  is a test\r\n\r\n", 14, "Subject: This\r\n is a test\r\n\r\n"},
+        {"Subject: This is a test of parsing message.\r\n\r\n", 14, "Subject: This\r\n is a test of\r\n parsing\r\n message.\r\n\r\n"},
         {"Subject: This is a test\r\n\r\n", 14, "Subject: This\r\n is a test\r\n\r\n"},
-        {"Subject: This\tis\ta\ttest\r\n\r\n", 14, "Subject: This\r\n\tis\ta\ttest\r\n\r\n"},
+        {"Subject: This \tis a test\r\n\r\n", 14, "Subject: This\r\n is a test\r\n\r\n"},
+        {"Subject: This\tis\ta\ttest\r\n\r\n", 14, "Subject: This\r\n is\ta\ttest\r\n\r\n"},
         {"Subject: This is a test\r\n\r\n", 15, "Subject: This\r\n is a test\r\n\r\n"},
         {"Subject: This is a test\r\n\r\n", 16, "Subject: This is\r\n a test\r\n\r\n"},
         {"Subject: This is a test\r\n\r\n", 20, "Subject: This is a\r\n test\r\n\r\n"},
         {"Subject: This is a test\r\n\r\n", 10, "Subject:\r\n This is\r\n a test\r\n\r\n"},
         {"Subject: This is a test\r\n\r\n", 5, "Subject:\r\n This\r\n is\r\n a\r\n test\r\n\r\n"},
         {"Subject: This is a test\r\nX-Data: xxxxxx xxx\r\n\r\n", 5, "Subject:\r\n This\r\n is\r\n a\r\n test\r\nX-Data:\r\n xxxxxx\r\n xxx\r\n\r\n"},
-        {"Subject: This is a test\r\nX-Data: xxxxxx xxx\r\n\r\nI'm\tbody!!!\r\n", 5, "Subject:\r\n This\r\n is\r\n a\r\n test\r\nX-Data:\r\n xxxxxx\r\n xxx\r\n\r\nI'm\r\n\tbody!!!\r\n"},
+        {"Subject: This is a test\r\nX-Data: xxxxxx xxx\r\n\r\nI'm\tbody!!!\r\n", 5, "Subject:\r\n This\r\n is\r\n a\r\n test\r\nX-Data:\r\n xxxxxx\r\n xxx\r\n\r\nI'm\r\n body!!!\r\n"},
     };
 
     size_t idx = 0;
@@ -274,8 +277,8 @@ TEST(MessageTests, ProduceToMessageByFolding) {
         msg::Message msg;
         ASSERT_TRUE(msg.parseFromMessage(testCase.rawMessage))
             << ">>> Test is failed at " << idx << ". <<<";
-        // ASSERT_EQ(testCase.rawMessage, msg.produceToMessage())
-        //     << ">>> Test is failed at " << idx << ". <<<";
+        ASSERT_EQ(testCase.rawMessage, msg.produceToMessage())
+            << ">>> Test is failed at " << idx << ". <<<";
         if (testCase.maxLength) msg.setLineLength(testCase.maxLength);
         ASSERT_EQ(testCase.expectMessage, msg.produceToMessage())
             << ">>> Test is failed at " << idx << ". <<<";
