@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-08-05 14:51:03
+ * @LastEditTime: 2019-08-07 09:59:04
  * @Description: Unittests of class msg::msg.
  */
 #include <gtest/gtest.h>
@@ -211,7 +211,7 @@ TEST(MessageTests, SetMessageHeadersAndBody) {
     msg::Message msg;
     size_t idx = 0;
     for (const auto &testCase : testCases) {
-        msg.setHeader(testCase.name, testCase.value);
+        msg.setHeader(testCase.name, testCase.value, true);
         ASSERT_TRUE(msg.hasHeader(testCase.name))
             << ">>> Test is failed at " << idx << ". <<<";
         ASSERT_EQ(testCase.value, msg.getHeaderValue(testCase.name))
@@ -259,4 +259,26 @@ TEST(MessageTests, ProduceToMessageByFolding) {
             << ">>> Test is failed at " << idx << ". <<<";
         ++idx;
     }
+}
+
+TEST(MessageTests, GetMultiValuesByHeaderName) {
+    std::string rawMessage =
+        "Via: SIP/2.0/UDP server10.biloxi.com\r\n"
+        "    ;branch=z9hG4bKnashds8;received=192.0.2.3\r\n"
+        "Via: SIP/2.0/UDP bigbox3.site3.atlanta.com\r\n"
+        "    ;branch=z9hG4bK77ef4c2312983.1;received=192.0.2.2\r\n"
+        "Via: SIP/2.0/UDP pc33.atlanta.com\r\n"
+        "    ;branch=z9hG4bK776asdhds ;received=192.0.2.1\r\n"
+        "To: Bob <sip:bob@biloxi.com>;tag=a6c85cf\r\n"
+        "\r\n";
+
+    msg::Message msg;
+    ASSERT_TRUE(msg.parseFromMessage(rawMessage));
+    ASSERT_TRUE(msg.hasHeader("Via"));
+    ASSERT_EQ(
+        "SIP/2.0/UDP server10.biloxi.com ;branch=z9hG4bKnashds8;received=192.0.2.3, "
+        "SIP/2.0/UDP bigbox3.site3.atlanta.com ;branch=z9hG4bK77ef4c2312983.1;received=192.0.2.2, "
+        "SIP/2.0/UDP pc33.atlanta.com ;branch=z9hG4bK776asdhds ;received=192.0.2.1",
+        msg.getHeaderValue("Via")
+    );
 }

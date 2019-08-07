@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-08-05 14:58:14
+ * @LastEditTime: 2019-08-07 09:58:11
  * @Description: An implementation of class msg::Message.
  */
 #include <algorithm>
@@ -98,7 +98,7 @@ bool Message::parseFromMessage(const std::string &rawMessage) {
 
     // Handle each line and assign it to header or body.
     bool doneWithHeaders = false;
-    for (const auto &line : lines) {
+    for (auto &line : lines) {
         if (line == "") {
             doneWithHeaders = true;
             continue;
@@ -109,6 +109,8 @@ bool Message::parseFromMessage(const std::string &rawMessage) {
 
             auto pos = line.find(headerFieldDelimeter);
             if (pos == std::string::npos) {
+                ltrim(line);
+                line.insert(0, " ");
                 headers_.back().second += line;
             } else { // Set headers.
 
@@ -121,7 +123,7 @@ bool Message::parseFromMessage(const std::string &rawMessage) {
                 // Printable US-ASCII characters and WSP characters
                 if (!isValid(headerValue, "[\x9\x20-\x7E]*"))
                     return false;
-                headers_.emplace_back(headerName, headerValue);
+                setHeader(headerName, headerValue);
             }
         } else { // Concat rest message to body.
             body_ += line;
@@ -197,10 +199,13 @@ bool Message::hasHeader(const std::string &headerName) const {
  * @return:
  */
 void Message::setHeader(const std::string &headerName,
-                        const std::string &headerValue) {
+                        const std::string &headerValue, bool replace) {
     for (auto &header : headers_) {
         if (header.first == headerName) {
-            header.second = headerValue;
+            if (replace)
+                header.second = headerValue;
+            else 
+                header.second += "," + headerValue;
             return;
         }
     }

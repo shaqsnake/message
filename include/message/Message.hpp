@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:27:32
- * @LastEditTime: 2019-08-02 14:26:06
+ * @LastEditTime: 2019-08-07 09:47:40
  * @Description: A declaration of class msg::Message.
  */
 #ifndef MESSAGE_MESSAGE_HPP
@@ -32,7 +32,7 @@ public:
     Headers getHeaders() const;
     bool hasHeader(const std::string &headerName) const;
     void setHeader(const std::string &headerName,
-                   const std::string &headerValue);
+                   const std::string &headerValue, bool replace = false);
     std::string getHeaderValue(const std::string &headerName) const;
     std::string getBody() const;
     void setBody(const std::string &bodyText);
@@ -45,7 +45,8 @@ private:
 
 private:
     void dumpToVec(std::vector<std::string> &dest) const;
-    void foldMessageLines(std::vector<std::string> &lines, size_t maxLength) const;
+    void foldMessageLines(std::vector<std::string> &lines,
+                          size_t maxLength) const;
 };
 
 } // namespace msg
