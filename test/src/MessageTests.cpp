@@ -140,34 +140,9 @@ TEST(MessageTests, ParseFromFoldingMessage) {
         std::string expectedBody;
     };
     std::vector<TestCase> testCases{
-        {"Subject: This\r\n is a test\r\n\r\n",
-         {
-             {"Subject", "This is a test"},
-         },
-         ""},
-        {"Subject: This \r\nis a test\r\n\r\n",
-         {
-             {"Subject", "This is a test"},
-         },
-         ""},
-        {"Subject: This\r\n is a test \r\n\r\n",
-         {
-             {"Subject", "This is a test"},
-         },
-         ""},
-        {"Subject: This\r\n is a test \r\nHost: www.exa\r\nmple.com\r\n\r\n",
-         {{"Subject", "This is a test"}, {"Host", "www.example.com"}},
-         ""},
-        {"Host: www.example.com\r\n\r\nI'm \r\nbody.\r\n",
-         {
-             {"Host", "www.example.com"},
-         },
-         "I'm body."},
-        {"Host: www.\r\nexample.com \r\n\r\n I\r\n'm \r\nbody. \r\n",
-         {
-             {"Host", "www.example.com"},
-         },
-         "I'm body."},
+        {"Subject: This\r\n is a test\r\n\r\n", {{"Subject", "This is a test"},}, ""},
+        {"Subject: This\r\n is a test \r\n\r\n", {{"Subject", "This is a test"},}, ""},
+        {"Host: www.example.com\r\n\r\nI'm \r\nbody.\r\n", {{"Host", "www.example.com"},}, "I'm body."},
     };
 
     size_t idx = 0;
