@@ -25,7 +25,8 @@ public:
     Message &operator=(Message &&) = delete;
 
 public:
-    typedef std::vector<std::pair<std::string, std::string>> Headers;
+    typedef std::pair<std::string, std::string> Header;
+    typedef std::vector<Header> Headers;
 
     bool parseFromMessage(const std::string &rawMessge);
     std::string produceToMessage() const;
