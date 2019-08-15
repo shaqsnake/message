@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:29:37
- * @LastEditTime: 2019-08-07 09:59:04
+ * @LastEditTime: 2019-08-15 17:11:42
  * @Description: Unittests of class msg::msg.
  */
 #include <gtest/gtest.h>
@@ -281,4 +281,26 @@ TEST(MessageTests, GetMultiValuesByHeaderName) {
         "SIP/2.0/UDP pc33.atlanta.com ;branch=z9hG4bK776asdhds ;received=192.0.2.1",
         msg.getHeaderValue("Via")
     );
+}
+
+TEST(MessageTests, RemoveHeaderByName) {
+    std::string rawMessage = 
+        "From: John Doe <jdoe@machine.example>\r\n"
+        "To: Mary Smith <mary@example.net>\r\n"
+        "Subject: Saying Hello\r\n"
+        "Date: Fri, 21 Nov 1997 09:55:06 -0600\r\n"
+        "Message-ID: <1234@local.machine.example>\r\n"
+        "\r\n"
+        "This is a message just to say hello.\r\n"
+        "So, \"Hello\".\r\n";
+
+    msg::Message msg;
+    ASSERT_TRUE(msg.parseFromMessage(rawMessage));
+    ASSERT_TRUE(msg.hasHeader("Message-ID"));
+    msg.removeHeader("Message-ID");
+    ASSERT_FALSE(msg.hasHeader("Message-ID"));
+
+    ASSERT_TRUE(msg.hasHeader("Date"));
+    msg.removeHeader("Date");
+    ASSERT_FALSE(msg.hasHeader("Date"));
 }

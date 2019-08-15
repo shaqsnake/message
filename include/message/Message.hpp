@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:27:32
- * @LastEditTime: 2019-08-07 09:47:40
+ * @LastEditTime: 2019-08-15 17:02:40
  * @Description: A declaration of class msg::Message.
  */
 #ifndef MESSAGE_MESSAGE_HPP
@@ -35,6 +35,7 @@ public:
     void setHeader(const std::string &headerName,
                    const std::string &headerValue, bool replace = false);
     std::string getHeaderValue(const std::string &headerName) const;
+    void removeHeader(const std::string &headerName);
     std::string getBody() const;
     void setBody(const std::string &bodyText);
     void setLineLength(size_t maxLength);

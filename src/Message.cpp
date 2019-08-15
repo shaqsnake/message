@@ -3,7 +3,7 @@
  * @Author: shaqsnake
  * @Email: shaqsnake@gmail.com
  * @Date: 2019-07-25 09:28:37
- * @LastEditTime: 2019-08-07 09:58:11
+ * @LastEditTime: 2019-08-15 17:10:28
  * @Description: An implementation of class msg::Message.
  */
 #include <algorithm>
@@ -204,7 +204,7 @@ void Message::setHeader(const std::string &headerName,
         if (header.first == headerName) {
             if (replace)
                 header.second = headerValue;
-            else 
+            else
                 header.second += "," + headerValue;
             return;
         }
@@ -212,6 +212,20 @@ void Message::setHeader(const std::string &headerName,
 
     headers_.emplace_back(headerName, headerValue);
     return;
+}
+
+/**
+ * @description:
+ *     Remove message header by its name.
+ * @param[in] headerName;
+ *     A header's name to specified which header should be remvoed.
+ */
+void Message::removeHeader(const std::string &headerName) {
+    headers_.erase(std::remove_if(headers_.begin(), headers_.end(),
+                                  [&headerName](Message::Header header) {
+                                      return header.first == headerName;
+                                  }),
+                   headers_.end());
 }
 
 /**
@@ -297,7 +311,7 @@ void Message::foldMessageLines(std::vector<std::string> &dest,
         while (line.size()) {
             auto splitPos = line.find_first_of(whitespaces);
             if (splitPos != std::string::npos) { // Splite string by WSP and
-                                               // concat to buffer.
+                                                 // concat to buffer.
                 auto offset = line.find_first_not_of(whitespaces, splitPos);
                 buffer += line.substr(0, offset);
                 line.erase(0, offset);
